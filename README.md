@@ -5,7 +5,7 @@ https://yuwenxifan.github.io/BCJH-Metropolis-html/
 ### 介绍
 原项目：https://github.com/hjenryin/BCJH-Metropolis
 
-宴会跑分计算器的网页移植版，通过 emscripten 实现，将c++项目编译成js
+宴会跑分计算器的网页移植版，通过 emscripten 实现，将c++项目编译成js（在此鸣谢原项目作者ajdx，这些全是他做的）
 
 目前还在试验阶段，还有一些问题没有解决。
 
