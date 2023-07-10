@@ -5,18 +5,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <link rel="stylesheet" href="./ele/index.css">
 </head>
 
 <body>
-  <div><span>个人数据id（仅首次使用需要）：</span><input id="userId" type="number"></div>
-  <button id="start">开始</button>
-  <hr>
-  <div id="result"></div>
+  <div id="main">
+    <el-form label-width="100px">
+      <el-form-item label="个人数据ID：">
+        <el-input v-model="userId" placeholder="仅首次使用需要" controls="false" size="small"></el-input>
+      </el-form-item>
+      <el-form-item label="">
+        <el-button @click="doRun" size="small">开始</el-button>
+      </el-form-item>
+    </el-form>
+    <hr>
+    <div>
+      <div v-for="item of result">{{item}}</div>
+    </div>
+  </div>
 </body>
 <script type="text/javascript" src="//cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script>
-<script src="./jquery-2.1.4.min.js"></script>
-<script src="./bcjh.js"></script>
-<script src="./index.js"></script>
+<script src="./js/vue.min.js"></script>
+<script src="./ele/index.js"></script>
+<script src="./js/jquery-2.1.4.min.js"></script>
+<script src="./js/bcjh.js"></script>
+<script src="./js/index.js"></script>
 
 </html>
