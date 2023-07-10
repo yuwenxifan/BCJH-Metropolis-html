@@ -6,20 +6,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
   <link rel="stylesheet" href="./ele/index.css">
+  <link rel="stylesheet" href="./css/index.css">
 </head>
 
 <body>
   <div id="main">
-    <el-form label-width="100px">
-      <el-form-item label="个人数据ID：">
-        <el-input v-model="userId" placeholder="仅首次使用需要" controls="false" size="small"></el-input>
+    <el-form label-width="90px">
+      <el-form-item label="数据ID：">
+        <el-input v-model="userId" placeholder="仅首次使用需要" size="small"></el-input>
       </el-form-item>
-      <el-form-item label="">
-        <el-button @click="doRun" size="small">开始</el-button>
+      <el-form-item label="规则：">
+        <el-select v-model="ruleId" placeholder="请选择规则" size="small">
+          <el-option v-for="item of rules" :label="item.title" :value="item.id"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="期望分数">
+        <el-input v-model="passline" placeholder="期望获得的分数，必填" size="small"></el-input>
+      </el-form-item>
+      <el-form-item label="迭代次数">
+        <el-col :span="11">
+          <el-input v-model="iterChef" placeholder="厨师，必填" size="small"></el-input>
+        </el-col>
+        <el-col :span="2" style="text-align: center;">
+          *
+        </el-col>
+        <el-col :span="11">
+          <el-input v-model="iterRep" placeholder="菜谱，必填" size="small"></el-input>
+        </el-col>
       </el-form-item>
     </el-form>
-    <hr>
-    <div>
+    <el-button id="start" @click="doRun" size="small" type="primary" :disable="disable">开始</el-button>
+    <div id="result">
       <div v-for="item of result">{{item}}</div>
     </div>
   </div>
