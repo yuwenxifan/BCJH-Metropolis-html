@@ -100,45 +100,38 @@ $(function() {
       getResult(data) {
         let that = this;
         that.printLog("")
-        Promise.all([
-          that.moduleRun(data),
-          that.moduleRun(data),
-          that.moduleRun(data),
-          that.moduleRun(data),
-          that.moduleRun(data),
-          that.moduleRun(data),
-          that.moduleRun(data),
-          that.moduleRun(data),
-        ]).then(results => {
-          let scores = [];
-          let max = 0;
-          let result;
-          results.forEach(r => {
-            let rst = JSON.parse(r);
-            scores.push(rst.score);
-            if (rst.score > max) {
-              max = rst.score;
-              result = rst;
-            }
-          });
-          that.printLog(`分数列表：${scores.join(', ')}`);
-          that.printLog('最佳结果：');
-          let repIdx = 0;
-          for (let chef of result.chefs) {
-            that.printLog(`厨师：${chef}`);
-            let reps = [];
-            for(let i = 0; i < 3; i++) {
-              reps.push(result.recipes[repIdx]);
-              repIdx += 1;
-            }
-            that.printLog(`菜谱：${reps.join('; ')}`);
-            if (repIdx % 9 == 0) {
-              that.printLog('===================');
+        const cnt = 8;
+        let scores = [];
+        let max = 0;
+        let result;
+        for (let i = 0; i < cnt; i++) {
+          let rst = JSON.parse(that.moduleRun(data));
+          scores.push(rst.score);
+          if (rst.score > max) {
+            max = rst.score;
+            result = rst;
+            if (max > that.passline) {
+              break;
             }
           }
-          that.printLog(`分数：${result.score}`);
-          that.disable = false;
-        })
+        }
+        that.printLog(`分数列表：${scores.join(', ')}`);
+        that.printLog('最佳结果：');
+        let repIdx = 0;
+        for (let chef of result.chefs) {
+          that.printLog(`厨师：${chef}`);
+          let reps = [];
+          for(let i = 0; i < 3; i++) {
+            reps.push(result.recipes[repIdx]);
+            repIdx += 1;
+          }
+          that.printLog(`菜谱：${reps.join('; ')}`);
+          if (repIdx % 9 == 0) {
+            that.printLog('===================');
+          }
+        }
+        that.printLog(`分数：${result.score}`);
+        that.disable = false;
       },
       printLog(str) {
         console.log(str);
@@ -146,9 +139,7 @@ $(function() {
       },
       moduleRun(data) {
         let that = this;
-        return new Promise((resolve, reject) => {
-          resolve(Module.run(data, that.ruleId, parseInt(that.passline), that.iterChef, that.iterRep, false))
-        });
+        return Module.run(data, that.ruleId, parseInt(that.passline), that.iterChef, that.iterRep, false);
       }
     }
   });
