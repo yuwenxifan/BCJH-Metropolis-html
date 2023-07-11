@@ -14,6 +14,7 @@ body {
 }
 
 #result {
+  min-height: 300px;
   border: 1px solid #d7dae2;
   border-radius: 4px;
   padding: 6px 10px;

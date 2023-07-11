@@ -13,12 +13,11 @@ $(function() {
       iterChef: 5000,
       iterRep: 1000,
       userCfg: {},
-      rule: {},
-      initialized: false,
-      guestCnt: 0
+      rule: {}
     },
     mounted() {
       let that = this;
+      that.getUserCfg();
       that.getRule();
     },
     methods: {
@@ -26,7 +25,6 @@ $(function() {
         let userCfg = window.localStorage.getItem('userCfg');
         if (userCfg) {
           this.userCfg = JSON.parse(userCfg);
-          this.ruleId = this.userCfg.ruleId;
           this.passline = this.userCfg.passline || this.passline;
           this.iterChef = this.userCfg.iterChef || this.iterChef;
           this.iterRep = this.userCfg.iterRep || this.iterRep;
@@ -47,30 +45,11 @@ $(function() {
             that.rules = rst.rules;
             that.intents = rst.intents;
             that.buffs = rst.buffs;
-            that.getUserCfg();
-            if (!that.rule) {
-              that.ruleId = rst.rules[0].id;
-            }
-            setTimeout(() => {
-              loadJS(`./js/bcjh_${that.rule.group.length}.js`, function () {
-                Module.onRuntimeInitialized = function () {
-                  that.initialized = true;
-                  that.printLog('加载完成');
-                  that.guestCnt = that.rule.group.length;
-                }
-              });
-            });
+            that.ruleId = rst.rules[0].id;
           }
         });
       },
       doRun() {
-        if (!this.initialized) {
-          this.$message({
-            message: '请等待页面出现加载完成字样后再点击开始',
-            type: 'error'
-          });
-          return;
-        }
         if (!this.passline || !this.iterChef || !this.iterRep) {
           this.$message({
             message: '请填写必填项',
@@ -82,7 +61,7 @@ $(function() {
       },
       exec() {
         let that = this;
-        that.result = ['加载完成'];
+        that.result = [];
         let userId = that.userId;
         that.printLog('开始执行');
         let response;
@@ -95,12 +74,9 @@ $(function() {
               type: 'error'
             })
           } else {
-            that.printLog('个人数据获取成功，请耐心等待');
-          }
-          that.disable = true;
-          setTimeout(() => {
+            that.printLog('个人数据获取成功，请耐心等待结果输出');
             that.getResult(JSON.parse(response).data);
-          }, 100);
+          }
         } else {
           that.printLog('用户id：' + userId + '，调接口获取个人数据')
           $.ajax({
@@ -117,10 +93,7 @@ $(function() {
               window.localStorage.setItem('data', response);
               that.printLog('个人数据获取成功，请耐心等待');
             }
-            that.disable = true;
-            setTimeout(() => {
-              that.getResult(JSON.parse(response).data);
-            }, 100);
+            that.getResult(JSON.parse(response).data);
           }).fail(err => {
             that.$message({
               message: '获取个人数据失败',
@@ -131,48 +104,66 @@ $(function() {
       },
       getResult(data) {
         let that = this;
-        that.printLog("")
+        that.disable = true;
+        that.printLog("");
         const cnt = 8;
         let scores = [];
         let max = 0;
         let result;
         for (let i = 0; i < cnt; i++) {
-          let rst = JSON.parse(that.moduleRun(data));
-          scores.push(rst.score);
-          if (rst.score > max) {
-            max = rst.score;
-            result = rst;
-            if (max > that.passline) {
-              break;
+          const myWorker = new Worker('./js/worker.js'); // 创建worker
+
+          myWorker.addEventListener('message', e => { // 接收消息
+            let rst = JSON.parse(e.data);
+            scores.push(rst.score);
+            if (rst.score > max) {
+              max = rst.score;
+              result = rst;
             }
-          }
+            if (scores.length == 1) {
+              that.printLog(`分数列表：${scores.join(', ')}`);
+            } else {
+              that.printLast(`分数列表：${scores.join(', ')}`);
+            }
+            if (scores.length == cnt) {
+              // 全执行完了
+              that.printLog('最佳结果：');
+              let repIdx = 0;
+              for (let chef of result.chefs) {
+                that.printLog(`厨师：${chef}`);
+                let reps = [];
+                for(let i = 0; i < 3; i++) {
+                  reps.push(result.recipes[repIdx]);
+                  repIdx += 1;
+                }
+                that.printLog(`菜谱：${reps.join('; ')}`);
+                if (repIdx % 9 == 0) {
+                  that.printLog('===================');
+                }
+              }
+              that.printLog(`分数：${result.score}`);
+              that.disable = false;
+            }
+          });
+
+          myWorker.postMessage({
+            data,
+            rule: JSON.stringify(that.rule),
+            passline: parseInt(that.passline),
+            iterChef: parseInt(that.iterChef),
+            iterRep: parseInt(that.iterRep)
+          });
+
         }
-        that.printLog(`分数列表：${scores.join(', ')}`);
-        that.printLog('最佳结果：');
-        let repIdx = 0;
-        for (let chef of result.chefs) {
-          that.printLog(`厨师：${chef}`);
-          let reps = [];
-          for(let i = 0; i < 3; i++) {
-            reps.push(result.recipes[repIdx]);
-            repIdx += 1;
-          }
-          that.printLog(`菜谱：${reps.join('; ')}`);
-          if (repIdx % 9 == 0) {
-            that.printLog('===================');
-          }
-        }
-        that.printLog(`分数：${result.score}`);
-        that.disable = false;
       },
       printLog(str) {
         console.log(str);
         this.result.push(str);
       },
-      moduleRun(data) {
-        let that = this;
-        console.log(JSON.stringify(that.rule))
-        return Module.run(data, JSON.stringify(that.rule), parseInt(that.passline), parseInt(that.iterChef), parseInt(that.iterRep), false);
+      printLast(str) {
+        console.log(str);
+        this.result.pop();
+        this.result.push(str);
       }
     },
     watch: {
@@ -189,52 +180,13 @@ $(function() {
         window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
       },
       ruleId(id) {
-        this.userCfg.ruleId = id;
-        window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
         let that = this;
         that.result = [];
         let rule = that.rules.find(r => r.id == id);
-        // 贵客数量
-        let guestCnt = rule.group.length;
         rule.intents = that.intents;
         rule.buffs = that.buffs;
         that.rule = rule;
-        // 如果贵客数量变了，刷新页面
-        if (that.guestCnt != 0 && that.guestCnt != guestCnt) {
-          location.reload();
-        } else if (that.guestCnt == guestCnt) {
-          that.printLog('加载完成');
-        }
       }
     }
   });
 })
-
-function loadJS(url, callback) {
-  var script = document.createElement("script");
-  script.type = "text/javascript";
-  if (script.readyState) { // IE
-    script.onreadystatechange = function () {
-      if (script.readyState == "loaded" || script.readyState == "complete") {
-        script.onreadystatechange = null;
-        callback();
-      }
-    };
-  } else { //Other browsers
-    script.onload = function () {
-      callback();
-    };
-  }
-  script.src = url;
-  document.getElementsByTagName("head")[0].appendChild(script);
-}
-
-function removeJS(url){
-  var scripts = document.getElementsByTagName('script');
-  for(var i=0; i<scripts.length; i++){
-    if(scripts[i].src.includes(url)){
-      document.getElementsByTagName('head')[0].removeChild(scripts[i]);
-      break;
-    }
-  }
-}

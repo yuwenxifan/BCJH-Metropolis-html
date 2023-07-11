@@ -35,18 +35,15 @@
         </el-col>
       </el-form-item>
     </el-form>
-    <el-button id="start" @click="doRun" size="small" type="primary" :disable="disable">开始</el-button>
+    <el-button id="start" @click="doRun" size="small" type="primary" :loading="disable">开始</el-button>
     <div id="result">
       <div v-for="item of result">{{item}}</div>
     </div>
   </div>
 </body>
-<script type="text/javascript" src="//cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
 <script src="./js/vue.min.js"></script>
 <script src="./ele/index.js"></script>
 <script src="./js/jquery-2.1.4.min.js"></script>
-<!-- <script src="./js/bcjh_2.js"></script> -->
 <script src="./js/index.js"></script>
 
 </html>
