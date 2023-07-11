@@ -27,3 +27,13 @@ body {
 #main .el-select {
   width: 100%;
 }
+
+/* 隐藏数字输入框上下箭头 */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}

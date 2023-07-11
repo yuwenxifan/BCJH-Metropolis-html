@@ -9,18 +9,29 @@ $(function() {
       rules: [],
       disable: false,
       ruleId: null,
-      passline: '',
+      passline: null,
       iterChef: 5000,
-      iterRep: 1000
+      iterRep: 1000,
+      userCfg: {},
+      rule: {},
+      initialized: false,
+      guestCnt: 0
     },
     mounted() {
       let that = this;
       that.getRule();
-      Module.onRuntimeInitialized = function () {
-        that.printLog("加载完成");
-      }
     },
     methods: {
+      getUserCfg() {
+        let userCfg = window.localStorage.getItem('userCfg');
+        if (userCfg) {
+          this.userCfg = JSON.parse(userCfg);
+          this.ruleId = this.userCfg.ruleId;
+          this.passline = this.userCfg.passline || this.passline;
+          this.iterChef = this.userCfg.iterChef || this.iterChef;
+          this.iterRep = this.userCfg.iterRep || this.iterRep;
+        }
+      },
       getRule() {
         let that = this;
         $.ajax({
@@ -34,11 +45,32 @@ $(function() {
             });
           } else {
             that.rules = rst.rules;
-            that.ruleId = rst.rules[0].id;
+            that.intents = rst.intents;
+            that.buffs = rst.buffs;
+            that.getUserCfg();
+            if (!that.rule) {
+              that.ruleId = rst.rules[0].id;
+            }
+            setTimeout(() => {
+              loadJS(`./js/bcjh_${that.rule.group.length}.js`, function () {
+                Module.onRuntimeInitialized = function () {
+                  that.initialized = true;
+                  that.printLog('加载完成');
+                  that.guestCnt = that.rule.group.length;
+                }
+              });
+            });
           }
         });
       },
       doRun() {
+        if (!this.initialized) {
+          this.$message({
+            message: '请等待页面出现加载完成字样后再点击开始',
+            type: 'error'
+          });
+          return;
+        }
         if (!this.passline || !this.iterChef || !this.iterRep) {
           this.$message({
             message: '请填写必填项',
@@ -139,8 +171,70 @@ $(function() {
       },
       moduleRun(data) {
         let that = this;
-        return Module.run(data, that.ruleId, parseInt(that.passline), that.iterChef, that.iterRep, false);
+        console.log(JSON.stringify(that.rule))
+        return Module.run(data, JSON.stringify(that.rule), parseInt(that.passline), parseInt(that.iterChef), parseInt(that.iterRep), false);
+      }
+    },
+    watch: {
+      passline(n) {
+        this.userCfg.passline = n;
+        window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
+      },
+      iterChef(n) {
+        this.userCfg.iterChef = n;
+        window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
+      },
+      iterRep(n) {
+        this.userCfg.iterRep = n;
+        window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
+      },
+      ruleId(id) {
+        this.userCfg.ruleId = id;
+        window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
+        let that = this;
+        that.result = [];
+        let rule = that.rules.find(r => r.id == id);
+        // 贵客数量
+        let guestCnt = rule.group.length;
+        rule.intents = that.intents;
+        rule.buffs = that.buffs;
+        that.rule = rule;
+        // 如果贵客数量变了，刷新页面
+        if (that.guestCnt != 0 && that.guestCnt != guestCnt) {
+          location.reload();
+        } else if (that.guestCnt == guestCnt) {
+          that.printLog('加载完成');
+        }
       }
     }
   });
 })
+
+function loadJS(url, callback) {
+  var script = document.createElement("script");
+  script.type = "text/javascript";
+  if (script.readyState) { // IE
+    script.onreadystatechange = function () {
+      if (script.readyState == "loaded" || script.readyState == "complete") {
+        script.onreadystatechange = null;
+        callback();
+      }
+    };
+  } else { //Other browsers
+    script.onload = function () {
+      callback();
+    };
+  }
+  script.src = url;
+  document.getElementsByTagName("head")[0].appendChild(script);
+}
+
+function removeJS(url){
+  var scripts = document.getElementsByTagName('script');
+  for(var i=0; i<scripts.length; i++){
+    if(scripts[i].src.includes(url)){
+      document.getElementsByTagName('head')[0].removeChild(scripts[i]);
+      break;
+    }
+  }
+}

@@ -13,7 +13,7 @@
   <div id="main">
     <el-form label-width="90px">
       <el-form-item label="数据ID：">
-        <el-input v-model="userId" placeholder="仅首次使用需要" size="small"></el-input>
+        <el-input v-model="userId" type="number" placeholder="仅首次使用需要" size="small"></el-input>
       </el-form-item>
       <el-form-item label="规则：">
         <el-select v-model="ruleId" placeholder="请选择规则" size="small">
@@ -21,17 +21,17 @@
         </el-select>
       </el-form-item>
       <el-form-item label="期望分数">
-        <el-input v-model="passline" placeholder="期望获得的分数，必填" size="small"></el-input>
+        <el-input v-model="passline" type="number" placeholder="期望获得的分数，必填" size="small"></el-input>
       </el-form-item>
       <el-form-item label="迭代次数">
         <el-col :span="11">
-          <el-input v-model="iterChef" placeholder="厨师，必填" size="small"></el-input>
+          <el-input v-model="iterChef" type="number" placeholder="厨师，必填" size="small"></el-input>
         </el-col>
         <el-col :span="2" style="text-align: center;">
           *
         </el-col>
         <el-col :span="11">
-          <el-input v-model="iterRep" placeholder="菜谱，必填" size="small"></el-input>
+          <el-input v-model="iterRep" type="number" placeholder="菜谱，必填" size="small"></el-input>
         </el-col>
       </el-form-item>
     </el-form>
@@ -46,7 +46,7 @@
 <script src="./js/vue.min.js"></script>
 <script src="./ele/index.js"></script>
 <script src="./js/jquery-2.1.4.min.js"></script>
-<script src="./js/bcjh.js"></script>
+<!-- <script src="./js/bcjh_2.js"></script> -->
 <script src="./js/index.js"></script>
 
 </html>
