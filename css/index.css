@@ -18,7 +18,7 @@ body {
   border: 1px solid #d7dae2;
   border-radius: 4px;
   padding: 6px 10px;
-  margin: 20px 0px;
+  margin: 20px 0px 5px 0px;
 }
 
 #main .el-form-item {
@@ -27,6 +27,10 @@ body {
 
 #main .el-select {
   width: 100%;
+}
+
+#sign {
+  text-align: right;
 }
 
 .text-button {
