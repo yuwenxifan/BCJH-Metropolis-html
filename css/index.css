@@ -29,6 +29,24 @@ body {
   width: 100%;
 }
 
+.text-button {
+  display: inline-block;
+  white-space: nowrap;
+  text-decoration: underline;
+  cursor: pointer;
+  margin: 0 5px;
+}
+.text-button.pass {
+  color: green;
+}
+.text-button.fail {
+  color: red;
+}
+.text-button.active {
+  font-weight: 900;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.12);
+}
+
 /* 隐藏数字输入框上下箭头 */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
@@ -36,5 +54,6 @@ input::-webkit-inner-spin-button {
 }
 
 input[type="number"] {
+  appearance: textfield;
   -moz-appearance: textfield;
 }

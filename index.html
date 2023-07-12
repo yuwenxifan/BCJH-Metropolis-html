@@ -37,13 +37,25 @@
     </el-form>
     <el-button id="start" @click="doRun" size="small" type="primary" :loading="disable">开始</el-button>
     <div id="result">
-      <div v-for="item of result">{{item}}</div>
+      <div v-for="item of log">{{item}}</div>
+      <div v-show="scores.length > 0" style="margin: 10px 0;">
+        <span>分数列表：</span>
+        <div v-for="(item, idx) of scores"
+          class="text-button"
+          :class="(item >= passline ? 'pass' : 'fail') + (idx == rstShowId ? ' active' : '')"
+          type="text" @click="rstShowId = idx">{{item}}</div>
+      </div>
+      <div v-for="(item, idx) of results" v-show="idx == rstShowId">
+        <span>结果：</span>
+        <div v-for="i of item">{{i}}</div>
+      </div>
+      <div></div>
     </div>
   </div>
 </body>
 <script src="./js/vue.min.js"></script>
 <script src="./ele/index.js"></script>
 <script src="./js/jquery-2.1.4.min.js"></script>
-<script src="./js/index.js"></script>
+<script src="./js/index.js?v=1"></script>
 
 </html>

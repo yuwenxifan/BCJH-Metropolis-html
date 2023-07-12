@@ -3,7 +3,7 @@ $(function() {
     el: '#main',
     data: {
       uri: 'https://bcjh.xyz/api',
-      result: [],
+      log: [],
       form: {},
       userId: null,
       rules: [],
@@ -13,7 +13,10 @@ $(function() {
       iterChef: 5000,
       iterRep: 1000,
       userCfg: {},
-      rule: {}
+      rule: {},
+      scores: [],
+      results: [],
+      rstShowId: -1
     },
     mounted() {
       let that = this;
@@ -61,7 +64,7 @@ $(function() {
       },
       exec() {
         let that = this;
-        that.result = [];
+        that.log = [];
         let userId = that.userId;
         that.printLog('开始执行');
         let response;
@@ -74,8 +77,7 @@ $(function() {
               type: 'error'
             })
           } else {
-            that.printLog('个人数据获取成功，请耐心等待结果输出');
-            that.getResult(JSON.parse(response).data);
+            that.getResult(JSON.parse(response).data, JSON.parse(response).user);
           }
         } else {
           that.printLog('用户id：' + userId + '，调接口获取个人数据')
@@ -91,9 +93,8 @@ $(function() {
             } else {
               response = JSON.stringify(rst);
               window.localStorage.setItem('data', response);
-              that.printLog('个人数据获取成功，请耐心等待');
+              that.getResult(JSON.parse(response).data, JSON.parse(response).user);
             }
-            that.getResult(JSON.parse(response).data);
           }).fail(err => {
             that.$message({
               message: '获取个人数据失败',
@@ -102,46 +103,37 @@ $(function() {
           });
         }
       },
-      getResult(data) {
+      getResult(data, user) {
         let that = this;
+        if (!that.checkData(data, user)) {
+          return;
+        }
         that.disable = true;
         that.printLog("");
-        const cnt = 8;
-        let scores = [];
+        let cnt = 8;
+        try {
+          cnt = window.navigator.hardwareConcurrency;
+          this.printLog(`${cnt}核CPU，同时跑${cnt}个线程`)
+        } catch (err) {
+          console.log('获取CPU核数失败')
+        }
+        that.scores = [];
+        that.results = [];
+        that.rstShowId = -1;
         let max = 0;
-        let result;
         for (let i = 0; i < cnt; i++) {
           const myWorker = new Worker('./js/worker.js'); // 创建worker
 
           myWorker.addEventListener('message', e => { // 接收消息
             let rst = JSON.parse(e.data);
-            scores.push(rst.score);
+            that.scores.push(rst.score);
+            that.results.push(that.fetchRstShow(rst));
             if (rst.score > max) {
               max = rst.score;
-              result = rst;
+              that.rstShowId = that.scores.length - 1;
             }
-            if (scores.length == 1) {
-              that.printLog(`分数列表：${scores.join(', ')}`);
-            } else {
-              that.printLast(`分数列表：${scores.join(', ')}`);
-            }
-            if (scores.length == cnt) {
-              // 全执行完了
-              that.printLog('最佳结果：');
-              let repIdx = 0;
-              for (let chef of result.chefs) {
-                that.printLog(`厨师：${chef}`);
-                let reps = [];
-                for(let i = 0; i < 3; i++) {
-                  reps.push(result.recipes[repIdx]);
-                  repIdx += 1;
-                }
-                that.printLog(`菜谱：${reps.join('; ')}`);
-                if (repIdx % 9 == 0) {
-                  that.printLog('===================');
-                }
-              }
-              that.printLog(`分数：${result.score}`);
+            if (that.scores.length == cnt) {
+
               that.disable = false;
             }
           });
@@ -156,14 +148,53 @@ $(function() {
 
         }
       },
+      fetchRstShow(rst) {
+        let rstShow = [];
+        let repIdx = 0;
+        for (let chef of rst.chefs) {
+          rstShow.push(`厨师：${chef}`);
+          let reps = [];
+          for(let i = 0; i < 3; i++) {
+            reps.push(rst.recipes[repIdx]);
+            repIdx += 1;
+          }
+          rstShow.push(`菜谱：${reps.join('; ')}`);
+          if (repIdx % 9 == 0) {
+            rstShow.push('===================');
+          }
+        }
+        rstShow.push(`分数：${rst.score}`);
+        return rstShow;
+      },
+      checkData(data, user) {
+        let userData = JSON.parse(data);
+        let chefs = [];
+        let reps  = [];
+        for (let c in userData.chefGot) {
+          if (userData.chefGot[c]) {
+            chefs.push(c);
+          }
+        }
+        for (let r in userData.repGot) {
+          if (userData.repGot[r]) {
+            reps.push(r);
+          }
+        }
+        if (chefs.length > 0 && reps.length > 0) {
+          this.printLog(`个人数据获取成功（昵称：${user}，厨师数：${chefs.length}，菜谱数：${reps.length}），请耐心等待结果输出`);
+          return true;
+        }
+        this.printLog(`个人数据不正确（昵称：${user}，厨师数：${chefs.length}，菜谱数：${reps.length}），无法计算`);
+        return false;
+      },
       printLog(str) {
         console.log(str);
-        this.result.push(str);
+        this.log.push(str);
       },
       printLast(str) {
         console.log(str);
-        this.result.pop();
-        this.result.push(str);
+        this.log.pop();
+        this.log.push(str);
       }
     },
     watch: {
@@ -181,7 +212,7 @@ $(function() {
       },
       ruleId(id) {
         let that = this;
-        that.result = [];
+        that.log = [];
         let rule = that.rules.find(r => r.id == id);
         rule.intents = that.intents;
         rule.buffs = that.buffs;
