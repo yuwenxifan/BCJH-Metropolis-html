@@ -105,20 +105,25 @@ $(function() {
       },
       getResult(data, user) {
         let that = this;
+        that.scores = [];
+        that.results = [];
         if (!that.checkData(data, user)) {
           return;
         }
         that.disable = true;
         that.printLog("");
-        let cnt = 8;
+        let cnt;
         try {
-          cnt = window.navigator.hardwareConcurrency;
-          this.printLog(`${cnt}核CPU，同时跑${cnt}个线程`)
+          cnt = window.navigator.hardwareConcurrenc;
         } catch (err) {
-          console.log('获取CPU核数失败')
+          console.log('获取CPU核数失败', err);
         }
-        that.scores = [];
-        that.results = [];
+        if (cnt) {
+          this.printLog(`${cnt}核CPU，同时跑${cnt}个线程`)
+        } else {
+          cnt = 8;
+          this.printLog('没有获取到CPU核数，默认跑8个线程')
+        }
         that.rstShowId = -1;
         let max = 0;
         for (let i = 0; i < cnt; i++) {
@@ -167,7 +172,12 @@ $(function() {
         return rstShow;
       },
       checkData(data, user) {
-        let userData = JSON.parse(data);
+        let userData;
+        try {
+          userData = JSON.parse(data);
+        } catch (err) {
+          this.printLog('个人数据内容无法解析，请联系小鱼（QQ:3526642175）报告有问题的数据ID');
+        }
         let chefs = [];
         let reps  = [];
         for (let c in userData.chefGot) {
@@ -191,11 +201,6 @@ $(function() {
         console.log(str);
         this.log.push(str);
       },
-      printLast(str) {
-        console.log(str);
-        this.log.pop();
-        this.log.push(str);
-      }
     },
     watch: {
       passline(n) {
