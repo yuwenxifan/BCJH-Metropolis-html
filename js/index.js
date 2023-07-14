@@ -114,7 +114,7 @@ $(function() {
         that.printLog("");
         let cnt;
         try {
-          cnt = window.navigator.hardwareConcurrenc;
+          cnt = window.navigator.hardwareConcurrency;
         } catch (err) {
           console.log('获取CPU核数失败', err);
         }
