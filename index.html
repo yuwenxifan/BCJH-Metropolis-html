@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>宴会跑分</title>
   <link rel="stylesheet" href="./ele/index.css">
-  <link rel="stylesheet" href="./css/index.css?v=1">
+  <link rel="stylesheet" href="./css/index.css?v=2">
 </head>
 
 <body>
@@ -34,9 +34,28 @@
           <el-input v-model="iterRep" type="number" placeholder="菜谱，必填" size="small"></el-input>
         </el-col>
       </el-form-item>
+      <el-form-item label="线程数">
+        <el-col :xs="8" :sm="11" :md="11">
+          <el-input v-model="threadCnt" type="number" :max="cpuCnt" :min="1" placeholder="默认CPU核数，可调小" size="small"></el-input>
+        </el-col>
+        <el-col :xs="2" :sm="2" :md="2">&nbsp;</el-col>
+        <el-col :xs="14" :sm="11" :md="11">
+          <el-switch v-model="allowTool" active-text="使用厨具"></el-switch>
+        </el-col>
+      </el-form-item>
     </el-form>
     <el-button id="start" @click="doRun" size="small" type="primary" :loading="disable">开始</el-button>
     <div id="result">
+      <div class="placeholder" v-if="log.length == 0">
+        <div style="margin-bottom: 20px;">需要配合白菜菊花上传个人数据使用，白菜菊花【宴会跑分】页有详细使用说明。</div>
+        <div>
+          最近更新（2023-07-15 13:10）：
+          <br/>1. 修复了光环厨导致计算出错的bug；
+          <br/>2. 新增线程数选项，最大CPU核数，最小1；
+          <br/>3. 新增使用厨具选项，关闭后则禁用厨具；
+          <br/>4. 结果输出新增详细模式。
+        </div>
+      </div>
       <div v-for="item of log">{{item}}</div>
       <div v-show="scores.length > 0" style="margin: 10px 0;">
         <span>分数列表：</span>
@@ -45,11 +64,15 @@
           :class="(item >= passline ? 'pass' : 'fail') + (idx == rstShowId ? ' active' : '')"
           type="text" @click="rstShowId = idx">{{item}}</div>
       </div>
-      <div v-for="(item, idx) of results" v-show="idx == rstShowId">
-        <span>结果：</span>
-        <div v-for="i of item">{{i}}</div>
+      <div v-show="scores.length > 0">
+        <div style="margin-bottom: 10px;"><el-switch v-model="showDetail" active-text="详细模式"></el-switch></div>
+        <div v-if="!showDetail" v-for="(item, idx) of results" v-show="idx == rstShowId">
+          <div v-for="i of item">{{i}}</div>
+        </div>
+        <div v-if="showDetail" v-for="(item, idx) of resultsDeatil" v-show="idx == rstShowId">
+          <div v-for="i of item">{{i}}</div>
+        </div>
       </div>
-      <div></div>
     </div>
     <div id="sign">by ajdx（核心算法）、小鱼（交互页面）</div>
   </div>
@@ -57,6 +80,6 @@
 <script src="./js/vue.min.js"></script>
 <script src="./ele/index.js"></script>
 <script src="./js/jquery-2.1.4.min.js"></script>
-<script src="./js/index.js?v=2"></script>
+<script src="./js/index.js?v=3"></script>
 
 </html>

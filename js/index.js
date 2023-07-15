@@ -16,12 +16,18 @@ $(function() {
       rule: {},
       scores: [],
       results: [],
-      rstShowId: -1
+      resultsDeatil: [],
+      showDetail: false,
+      rstShowId: -1,
+      threadCnt: 0,
+      cpuCnt: 0,
+      allowTool: true
     },
     mounted() {
       let that = this;
-      that.getUserCfg();
       that.getRule();
+      that.cpuCnt = window.navigator.hardwareConcurrency || 8;
+      that.getUserCfg();
     },
     methods: {
       getUserCfg() {
@@ -31,6 +37,10 @@ $(function() {
           this.passline = this.userCfg.passline || this.passline;
           this.iterChef = this.userCfg.iterChef || this.iterChef;
           this.iterRep = this.userCfg.iterRep || this.iterRep;
+          this.threadCnt = this.userCfg.threadCnt || this.cpuCnt;
+          this.allowTool = this.userCfg.allowTool == undefined ? this.allowTool : this.userCfg.allowTool;
+        } else {
+          this.threadCnt = this.cpuCnt;
         }
       },
       getRule() {
@@ -107,23 +117,14 @@ $(function() {
         let that = this;
         that.scores = [];
         that.results = [];
+        that.resultsDeatil = [];
         if (!that.checkData(data, user)) {
           return;
         }
         that.disable = true;
         that.printLog("");
-        let cnt;
-        try {
-          cnt = window.navigator.hardwareConcurrency;
-        } catch (err) {
-          console.log('获取CPU核数失败', err);
-        }
-        if (cnt) {
-          this.printLog(`${cnt}核CPU，同时跑${cnt}个线程`)
-        } else {
-          cnt = 8;
-          this.printLog('没有获取到CPU核数，默认跑8个线程')
-        }
+        let cnt = parseInt(that.threadCnt);
+        this.printLog(`同时跑${cnt}个线程`)
         that.rstShowId = -1;
         let max = 0;
         for (let i = 0; i < cnt; i++) {
@@ -133,6 +134,7 @@ $(function() {
             let rst = JSON.parse(e.data);
             that.scores.push(rst.score);
             that.results.push(that.fetchRstShow(rst));
+            that.resultsDeatil.push(rst.logs.split('\n'));
             if (rst.score > max) {
               max = rst.score;
               that.rstShowId = that.scores.length - 1;
@@ -148,7 +150,8 @@ $(function() {
             rule: JSON.stringify(that.rule),
             passline: parseInt(that.passline),
             iterChef: parseInt(that.iterChef),
-            iterRep: parseInt(that.iterRep)
+            iterRep: parseInt(that.iterRep),
+            allowTool: that.allowTool
           });
 
         }
@@ -215,9 +218,26 @@ $(function() {
         this.userCfg.iterRep = n;
         window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
       },
+      threadCnt(n) {
+        let cnt = parseInt(n);
+        if (cnt < 1) {
+          this.threadCnt = 1;
+        } else if (cnt > 8) {
+          this.threadCnt = 8;
+        }
+        this.userCfg.threadCnt = cnt;
+        window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
+      },
+      allowTool(n) {
+        this.userCfg.allowTool = n;
+        window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
+      },
       ruleId(id) {
         let that = this;
         that.log = [];
+        that.scores = [];
+        that.results = [];
+        that.resultsDeatil = [];
         let rule = that.rules.find(r => r.id == id);
         rule.intents = that.intents;
         rule.buffs = that.buffs;
