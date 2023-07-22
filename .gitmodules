@@ -1,0 +1,4 @@
+[submodule "BCJH-Metropolis"]
+	path = BCJH-Metropolis
+	url = git@github.com:hjenryin/BCJH-Metropolis.git
+	branch = js_bugfix2(no_progress)
