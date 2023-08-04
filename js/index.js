@@ -21,7 +21,9 @@ $(function() {
       rstShowId: -1,
       threadCnt: 0,
       cpuCnt: 0,
-      allowTool: true
+      allowTool: true,
+      progress: [],
+      progressShow: 0
     },
     mounted() {
       let that = this;
@@ -118,6 +120,7 @@ $(function() {
         that.scores = [];
         that.results = [];
         that.resultsDeatil = [];
+        that.progress = [];
         if (!that.checkData(data, user)) {
           return;
         }
@@ -129,19 +132,25 @@ $(function() {
         let max = 0;
         for (let i = 0; i < cnt; i++) {
           const myWorker = new Worker('./js/worker.js'); // 创建worker
-
+          that.progress.push(0);
           myWorker.addEventListener('message', e => { // 接收消息
-            let rst = JSON.parse(e.data);
-            that.scores.push(rst.score);
-            that.results.push(that.fetchRstShow(rst));
-            that.resultsDeatil.push(rst.logs.split('\n'));
-            if (rst.score > max) {
-              max = rst.score;
-              that.rstShowId = that.scores.length - 1;
-            }
-            if (that.scores.length == cnt) {
+            if (typeof e.data == 'number') {
+              that.progress[i] = e.data;
+              // 通过progressShow更新页面，页面才会实时刷新进度条数据
+              that.progressShow = new Date().getTime();
+            } else {
+              let rst = JSON.parse(e.data);
+              that.scores.push(rst.score);
+              that.results.push(that.fetchRstShow(rst));
+              that.resultsDeatil.push(rst.logs.split('\n'));
+              if (rst.score > max) {
+                max = rst.score;
+                that.rstShowId = that.scores.length - 1;
+              }
+              if (that.scores.length == cnt) {
 
-              that.disable = false;
+                that.disable = false;
+              }
             }
           });
 

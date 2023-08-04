@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>宴会跑分</title>
   <link rel="stylesheet" href="./ele/index.css">
-  <link rel="stylesheet" href="./css/index.css?v=2">
+  <link rel="stylesheet" href="./css/index.css?v=3">
 </head>
 
 <body>
@@ -49,11 +49,15 @@
       <div class="placeholder" v-if="log.length == 0">
         <div style="margin-bottom: 20px;">需要配合白菜菊花上传个人数据使用，白菜菊花【宴会跑分】页有详细使用说明。</div>
         <div>
-          最近更新（2023-07-24 21:00）：
-          <br/>1. 修复了四五火厨师数量过少会报错跑不出结果的bug
+          最近更新（2023-08-04 15:40）：
+          <br/>1. 新增各线程跑分进度条显示
         </div>
       </div>
       <div v-for="item of log">{{item}}</div>
+      <div v-if="progress.length > scores.length" style="margin-top: 10px; max-width: 350px;">
+        <div v-show="false">{{progressShow}}</div>
+        <el-progress v-for="item of progress" :percentage="item"></el-progress>
+      </div>
       <div v-show="scores.length > 0" style="margin: 10px 0;">
         <span>分数列表：</span>
         <div v-for="(item, idx) of scores"
@@ -77,6 +81,6 @@
 <script src="./js/vue.min.js"></script>
 <script src="./ele/index.js"></script>
 <script src="./js/jquery-2.1.4.min.js"></script>
-<script src="./js/index.js?v=4"></script>
+<script src="./js/index.js?v=5"></script>
 
 </html>

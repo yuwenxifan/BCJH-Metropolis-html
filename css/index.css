@@ -77,3 +77,7 @@ input[type="number"] {
 .el-switch__label {
   color: #666;
 }
+
+.el-progress--line {
+  margin-bottom: 5px;
+}
