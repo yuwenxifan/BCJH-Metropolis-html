@@ -27,6 +27,7 @@ $(function() {
     },
     mounted() {
       let that = this;
+      that.getTips();
       that.getRule();
       that.cpuCnt = window.navigator.hardwareConcurrency || 8;
       that.getUserCfg();
@@ -45,11 +46,39 @@ $(function() {
           this.threadCnt = this.cpuCnt;
         }
       },
+      getUrlKey(name) {
+        return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.href) || [, ''])[1].replace(/\+/g, '%20')) || null
+      },
+      getTips() {
+        let that = this;
+        let time = this.getUrlKey('time') ? new Date(this.getUrlKey('time')) : null;
+        const data = {};
+        time ? data.time = JSON.parse(JSON.stringify(time)): null;
+        $.ajax({
+          url: `${that.uri}/get_banquet_tips`,
+          type: 'GET'
+        }).then(rst => {
+          if (rst[0]) {
+            this.$notify({
+              title: '公告',
+              message: rst[0].tips,
+              dangerouslyUseHTMLString: true,
+              duration: 0
+            });
+          }
+        }).fail(err => {
+          console.log('获取Tips失败');
+        });
+      },
       getRule() {
         let that = this;
+        let time = this.getUrlKey('time') ? new Date(this.getUrlKey('time')) : null;
+        const data = {};
+        time ? data.time = JSON.parse(JSON.stringify(time)): null;
         $.ajax({
           url: `${that.uri}/get_banquet_rule`,
-          type: 'GET'
+          type: 'GET',
+          data
         }).then(rst => {
           if (!rst) {
             that.$message({
@@ -62,6 +91,8 @@ $(function() {
             that.buffs = rst.buffs;
             that.ruleId = rst.rules[0].id;
           }
+        }).fail(err => {
+          this.$message.error('获取宴会规则失败');
         });
       },
       doRun() {
@@ -246,6 +277,7 @@ $(function() {
         that.log = [];
         that.scores = [];
         that.results = [];
+        that.progress = [];
         that.resultsDeatil = [];
         let rule = that.rules.find(r => r.id == id);
         rule.intents = that.intents;
