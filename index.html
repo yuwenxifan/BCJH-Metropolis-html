@@ -49,8 +49,10 @@
       <div class="placeholder" v-if="log.length == 0">
         <div style="margin-bottom: 20px;">需要配合白菜菊花上传个人数据使用，白菜菊花【宴会跑分】页有详细使用说明。</div>
         <div>
-          最近更新（2023-08-13 14:30）：
-          <br/>1. 修复【3道某技法，下阶段……】的意图导致的报错、加成错误的问题。
+          最近更新（2023-09-04 21:00）：
+          <br/>1. 更新福地洞天相关厨师菜谱数据；
+          <br/>2. 修复光环厨+使用厨具引起的计算错误bug；
+          <br/>3. 优化结果输出显示
         </div>
       </div>
       <div v-for="item of log">{{item}}</div>
@@ -66,11 +68,20 @@
           type="text" @click="rstShowId = idx">{{item}}</div>
       </div>
       <div v-show="scores.length > 0">
-        <div style="margin-bottom: 10px;"><el-switch v-model="showDetail" active-text="详细模式"></el-switch></div>
-        <div v-if="!showDetail" v-for="(item, idx) of results" v-show="idx == rstShowId">
+        <div style="margin-bottom: 10px;">
+          <el-radio-group v-model="resultType" size="mini">
+            <el-radio-button label="default">默认</el-radio-button>
+            <el-radio-button label="simple">简略</el-radio-button>
+            <el-radio-button label="detail">详细</el-radio-button>
+          </el-radio-group>
+        </div>
+        <div v-if="resultType == 'default'" v-for="(item, idx) of results" v-show="idx == rstShowId">
           <div v-for="i of item">{{i}}</div>
         </div>
-        <div v-if="showDetail" v-for="(item, idx) of resultsDeatil" v-show="idx == rstShowId">
+        <div v-if="resultType == 'simple'" v-for="(item, idx) of resultsSimple" v-show="idx == rstShowId">
+          <div v-for="i of item">{{i}}</div>
+        </div>
+        <div v-if="resultType == 'detail'" v-for="(item, idx) of resultsDeatil" v-show="idx == rstShowId">
           <div v-for="i of item">{{i}}</div>
         </div>
       </div>
@@ -81,6 +92,6 @@
 <script src="./js/vue.min.js"></script>
 <script src="./ele/index.js"></script>
 <script src="./js/jquery-2.1.4.min.js"></script>
-<script src="./js/index.js?v=6"></script>
+<script src="./js/index.js?v=7"></script>
 
 </html>

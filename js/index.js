@@ -15,9 +15,10 @@ $(function() {
       userCfg: {},
       rule: {},
       scores: [],
+      resultsSimple: [],
       results: [],
       resultsDeatil: [],
-      showDetail: false,
+      resultType: 'default',
       rstShowId: -1,
       threadCnt: 0,
       cpuCnt: 0,
@@ -38,6 +39,7 @@ $(function() {
         if (userCfg) {
           this.userCfg = JSON.parse(userCfg);
           this.passline = this.userCfg.passline || this.passline;
+          this.resultType = this.userCfg.resultType || this.resultType;
           this.iterChef = this.userCfg.iterChef || this.iterChef;
           this.iterRep = this.userCfg.iterRep || this.iterRep;
           this.threadCnt = this.userCfg.threadCnt || this.cpuCnt;
@@ -149,6 +151,7 @@ $(function() {
       getResult(data, user) {
         let that = this;
         that.scores = [];
+        that.resultsSimple = [];
         that.results = [];
         that.resultsDeatil = [];
         that.progress = [];
@@ -172,7 +175,8 @@ $(function() {
             } else {
               let rst = JSON.parse(e.data);
               that.scores.push(rst.score);
-              that.results.push(that.fetchRstShow(rst));
+              that.resultsSimple.push(that.fetchRstShow(rst));
+              that.results.push(that.fetchRstByLog(rst));
               that.resultsDeatil.push(rst.logs.split('\n'));
               if (rst.score > max) {
                 max = rst.score;
@@ -196,10 +200,55 @@ $(function() {
 
         }
       },
+      fetchRstByLog(rst) {
+        let rstShow = [];
+        let logs = rst.logs.split('\n');
+        let idx = 0;
+        let gusetIdx = 0;
+        let scores = [];
+        let gusetMap = {};
+        for (let log of logs) {
+          if (log.slice(0, 3) == '╰─>') {
+            scores.push(log.split('总价: ')[1]);
+          }
+          if (log.slice(0, 5) == '  厨师：') {
+            if (idx % 3 == 0) {
+              let guset = this.rule.group[gusetIdx].Title;
+              gusetIdx++;
+              rstShow.push(`第${gusetIdx}位客人：${guset}`);
+              gusetMap[gusetIdx] = rstShow.length - 1;
+            }
+            rstShow.push(log);
+          }
+          if (log.slice(0, 5) == '  菜谱：') {
+            let reps = log.split('；');
+            rstShow.push(reps.map((r, i) => `${r}(${scores[i]})`).join('；'));
+            scores = [];
+            idx++;
+            if (idx % 3 == 0) {
+              rstShow.push('===================');
+            }
+          }
+          if (['总分', '用时'].indexOf(log.slice(0, 2)) > -1) {
+            rstShow.push(log);
+          }
+          if (`第${gusetIdx}位客人` == log.slice(0, 5)) {
+            let guestStr = rstShow[gusetMap[gusetIdx]];
+            rstShow[gusetMap[gusetIdx]] = guestStr + ' ' + log.split('：')[1];
+          }
+        }
+        return rstShow;
+      },
       fetchRstShow(rst) {
         let rstShow = [];
         let repIdx = 0;
+        let gusetIdx = 0;
         for (let chef of rst.chefs) {
+          if (repIdx % 9 == 0) {
+            let guset = this.rule.group[gusetIdx].Title;
+            gusetIdx++;
+            rstShow.push(`第${gusetIdx}位客人：${guset}`);
+          }
           rstShow.push(`厨师：${chef}`);
           let reps = [];
           for(let i = 0; i < 3; i++) {
@@ -250,6 +299,10 @@ $(function() {
         this.userCfg.passline = n;
         window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
       },
+      resultType(n) {
+        this.userCfg.resultType = n;
+        window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
+      },
       iterChef(n) {
         this.userCfg.iterChef = n;
         window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
@@ -276,6 +329,7 @@ $(function() {
         let that = this;
         that.log = [];
         that.scores = [];
+        that.resultsSimple = [];
         that.results = [];
         that.progress = [];
         that.resultsDeatil = [];
