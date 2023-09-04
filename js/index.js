@@ -209,7 +209,7 @@ $(function() {
         let gusetMap = {};
         for (let log of logs) {
           if (log.slice(0, 3) == '╰─>') {
-            scores.push(log.split('总价: ')[1]);
+            scores.push(log.split('总价: ')[1].replace('💰︎', ''));
           }
           if (log.slice(0, 5) == '  厨师：') {
             if (idx % 3 == 0) {
