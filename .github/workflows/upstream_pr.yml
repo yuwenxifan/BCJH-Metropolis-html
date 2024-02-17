@@ -1,5 +1,5 @@
 # Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Forward to upstream
 
 on:
   # Runs on pushes targeting the default branch
@@ -49,6 +49,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - run: git pull
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
@@ -66,6 +67,6 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
-      - run: git checkout forward-emscripten && gh pr create --title "数据更新" --body "网页预览：https://hjenryin.github.io/BCJH-Metropolis-html/" --repo yuwenxifan/BCJH-Metropolis-html
+      - run: git checkout forward-emscripten && git pull && gh pr create --title "更新" --body "网页预览：https://hjenryin.github.io/BCJH-Metropolis-html/" --repo yuwenxifan/BCJH-Metropolis-html
         env:
           GH_TOKEN: ${{ secrets.web_pr }}
