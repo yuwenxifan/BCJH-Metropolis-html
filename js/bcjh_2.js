@@ -1352,7 +1352,7 @@ function dbg(...args) {
   }
 
   var warnOnce = (text) => {
-      warnOnce.shown ||= {};
+      warnOnce.shown = warnOnce.shown || {};
       if (!warnOnce.shown[text]) {
         warnOnce.shown[text] = 1;
         if (ENVIRONMENT_IS_NODE) text = 'warning: ' + text;
@@ -2009,7 +2009,7 @@ function dbg(...args) {
           // no supported
           throw new FS.ErrnoError(63);
         }
-        MEMFS.ops_table ||= {
+        MEMFS.ops_table = MEMFS.ops_table || {
           dir: {
             node: {
               getattr: MEMFS.node_ops.getattr,
@@ -5377,7 +5377,9 @@ function dbg(...args) {
       assert(outPtr % 2 == 0, 'Pointer passed to stringToUTF16 must be aligned to two bytes!');
       assert(typeof maxBytesToWrite == 'number', 'stringToUTF16(str, outPtr, maxBytesToWrite) is missing the third parameter that specifies the length of the output buffer!');
       // Backwards compatibility: if max bytes is not specified, assume unsafe unbounded write is allowed.
-      maxBytesToWrite ??= 0x7FFFFFFF;
+      if (maxBytesToWrite === null || maxBytesToWrite === undefined) {
+        maxBytesToWrite = 0x7FFFFFFF;
+      }
       if (maxBytesToWrite < 2) return 0;
       maxBytesToWrite -= 2; // Null terminator.
       var startPtr = outPtr;
@@ -5424,7 +5426,9 @@ function dbg(...args) {
       assert(outPtr % 4 == 0, 'Pointer passed to stringToUTF32 must be aligned to four bytes!');
       assert(typeof maxBytesToWrite == 'number', 'stringToUTF32(str, outPtr, maxBytesToWrite) is missing the third parameter that specifies the length of the output buffer!');
       // Backwards compatibility: if max bytes is not specified, assume unsafe unbounded write is allowed.
-      maxBytesToWrite ??= 0x7FFFFFFF;
+      if (maxBytesToWrite === null || maxBytesToWrite === undefined) {
+        maxBytesToWrite = 0x7FFFFFFF;
+      }
       if (maxBytesToWrite < 4) return 0;
       var startPtr = outPtr;
       var endPtr = startPtr + maxBytesToWrite - 4;
