@@ -24,7 +24,8 @@ $(function() {
       cpuCnt: 0,
       allowTool: true,
       progress: [],
-      progressShow: 0
+      progressShow: 0,
+      debugLog: []
     },
     mounted() {
       let that = this;
@@ -155,6 +156,7 @@ $(function() {
         that.results = [];
         that.resultsDeatil = [];
         that.progress = [];
+        that.debugLog = [];
         if (!that.checkData(data, user)) {
           return;
         }
@@ -172,6 +174,14 @@ $(function() {
               that.progress[i] = e.data;
               // 通过progressShow更新页面，页面才会实时刷新进度条数据
               that.progressShow = new Date().getTime();
+            } else if (e.data.slice(0, 5) == 'Error') {
+              that.scores.push(-1);
+              console.log(e.data)
+              that.debugLog.push(e.data);
+              that.rstShowId = 0;
+              if (that.scores.length == cnt) {
+                that.disable = false;
+              }
             } else {
               let rst = JSON.parse(e.data);
               that.scores.push(rst.score);
@@ -183,7 +193,6 @@ $(function() {
                 that.rstShowId = that.scores.length - 1;
               }
               if (that.scores.length == cnt) {
-
                 that.disable = false;
               }
             }

@@ -63,6 +63,15 @@ body {
   color: #c0c4cc;
 }
 
+.debug {
+  color: #f56c6c;
+  background-color: #fef0f0;
+  border: 1px solid #fde2e2;
+  border-radius: 8px;
+  padding: 6px 13px;
+  margin-bottom: 10px;
+}
+
 /* 隐藏数字输入框上下箭头 */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {

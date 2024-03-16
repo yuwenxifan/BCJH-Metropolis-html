@@ -47,11 +47,10 @@
     <el-button id="start" @click="doRun" size="small" type="primary" :loading="disable">开始</el-button>
     <div id="result">
       <div class="placeholder" v-if="log.length == 0">
-        <div style="margin-bottom: 20px;">需要配合白菜菊花上传个人数据使用，白菜菊花【宴会跑分】页有详细使用说明。</div>
-        <div>
-          最近更新（2024-03-16 01:50）：
-          <br/>1. 修复张国老第二阶段第二个菜谱的意图生效次数会异常+1的问题
+        <div style="margin-bottom: 20px;">此分支用于测试。运行速度将会较慢，但命令行中可以看到具体的报错。建议将数值设的小一些。</div>
         </div>
+      <div class="debug" v-show="debugLog.length > 0" v-for="item of debugLog">
+        {{item}}
       </div>
       <div v-for="item of log">{{item}}</div>
       <div v-if="progress.length > scores.length" style="margin-top: 10px; max-width: 350px;">
