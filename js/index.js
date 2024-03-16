@@ -10,8 +10,8 @@ $(function() {
       disable: false,
       ruleId: null,
       passline: null,
-      iterChef: 5000,
-      iterRep: 1000,
+      iterChef: 100,
+      iterRep: 100,
       userCfg: {},
       rule: {},
       scores: [],
@@ -21,7 +21,7 @@ $(function() {
       resultType: 'default',
       rstShowId: -1,
       threadCnt: 0,
-      cpuCnt: 0,
+      cpuCnt: 1,
       allowTool: true,
       progress: [],
       progressShow: 0,
@@ -31,7 +31,7 @@ $(function() {
       let that = this;
       that.getTips();
       that.getRule();
-      that.cpuCnt = window.navigator.hardwareConcurrency || 8;
+      // that.cpuCnt = window.navigator.hardwareConcurrency || 8;
       that.getUserCfg();
     },
     methods: {
