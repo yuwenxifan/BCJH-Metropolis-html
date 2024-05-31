@@ -67,6 +67,6 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
-      - run: git checkout forward-emscripten && git pull && gh pr create --title "更新" --body "网页预览：https://hjenryin.github.io/BCJH-Metropolis-html/" --repo yuwenxifan/BCJH-Metropolis-html
+      - run: git checkout forward-emscripten && git pull && gh pr create --title "更新" --body "网页预览：https://haoyun0.github.io/BCJH-Metropolis-html/" --repo yuwenxifan/BCJH-Metropolis-html
         env:
           GH_TOKEN: ${{ secrets.web_pr }}
