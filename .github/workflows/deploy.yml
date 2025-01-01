@@ -54,6 +54,12 @@ jobs:
         uses: actions/checkout@v4
       - run: git pull
 
+      - name: Prepare Debug
+        run: |
+          git checkout debug-online
+          cd ..; cp -r BCJH-Metropolis-html/ debug/; mv  debug/ BCJH-Metropolis-html/; cd BCJH-Metropolis-html
+          rm -r debug/.github; rm -r debug/.git
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
