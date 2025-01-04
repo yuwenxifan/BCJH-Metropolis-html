@@ -38,6 +38,27 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
 
+  post-upload-debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: debug-online
+      - name: move file
+        run: cd js && mv upload/bcjh* . && rm -r upload
+      - name: Commit files
+        run: |
+            git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add js
+            git commit -m "Post-upload changes."
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: debug-online
+
   # Single deploy job since we're just deploying
   deploy:
     if: ${{ !cancelled() }}
@@ -50,6 +71,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - run: git pull
+
+      - name: Prepare Debug
+        run: |
+          git checkout debug-online
+          cd ..; cp -r BCJH-Metropolis-html/ debug/; mv  debug/ BCJH-Metropolis-html/; cd BCJH-Metropolis-html
+          rm -r debug/.github; rm -r debug/.git
+          git checkout forward-emscripten # Use the debug version
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
@@ -70,3 +99,4 @@ jobs:
       - run: git checkout forward-emscripten && git pull && gh pr create --title "更新" --body "网页预览：https://hjenryin.github.io/BCJH-Metropolis-html/" --repo yuwenxifan/BCJH-Metropolis-html
         env:
           GH_TOKEN: ${{ secrets.web_pr }}
+
