@@ -5,7 +5,7 @@ self.addEventListener('message', e => {
       postMessage(progress);
   }
   Module.onRuntimeInitialized = function () {
-    let result = Module.run(e.data.data, e.data.rule, e.data.passline, e.data.iterChef, e.data.iterRep, e.data.allowTool, progressCall);
+    let result = Module.run(e.data.data, e.data.rule, e.data.passline, e.data.iterChef, e.data.iterRep, e.data.allowTool, e.data.recoverStr, progressCall);
     postMessage(result);
     self.close();
   }

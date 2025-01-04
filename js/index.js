@@ -24,7 +24,9 @@ $(function() {
       cpuCnt: 0,
       allowTool: true,
       progress: [],
-      progressShow: 0
+      progressShow: 0,
+      recoverStr: '',
+      recoverStrs: [],
     },
     mounted() {
       let that = this;
@@ -178,12 +180,13 @@ $(function() {
               that.resultsSimple.push(that.fetchRstShow(rst));
               that.results.push(that.fetchRstByLog(rst));
               that.resultsDeatil.push(rst.logs.split('\n'));
+              that.recoverStrs.push(rst.recover_str);
               if (rst.score > max) {
                 max = rst.score;
+                that.recoverStr = rst.recover_str;
                 that.rstShowId = that.scores.length - 1;
               }
               if (that.scores.length == cnt) {
-
                 that.disable = false;
               }
             }
@@ -195,7 +198,8 @@ $(function() {
             passline: parseInt(that.passline),
             iterChef: parseInt(that.iterChef),
             iterRep: parseInt(that.iterRep),
-            allowTool: that.allowTool
+            allowTool: that.allowTool,
+            recoverStr: that.recoverStr,
           });
 
         }

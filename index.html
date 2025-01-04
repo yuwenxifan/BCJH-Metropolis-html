@@ -47,10 +47,13 @@
     <el-button id="start" @click="doRun" size="small" type="primary" :loading="disable">开始</el-button>
     <div id="result">
       <div class="placeholder" v-if="log.length == 0">
-        <div style="margin-bottom: 20px;">需要配合白菜菊花上传个人数据使用，白菜菊花【宴会跑分】页有详细使用说明。</div>
+        <div>需要配合白菜菊花上传个人数据使用，白菜菊花【宴会跑分】页有详细使用说明。</div>
+        <div style="margin-bottom: 20px;">不刷新页面，不更换规则的情况，重新点开始可以接着上一次的结果继续跑，下一次分数只高不低。</div>
         <div>
-          最近更新（2025-01-01 19:00）：
-          <br/>1. 更新新池厨师菜谱数据
+          最近更新（2025-01-04 22:50）：
+          <br/>1. 修复小当家系列厨师会导致结果错乱的问题（视为未知技能，不会计算也不会导致结果出问题）
+          <br/>2. 新增重复计算自动继承上一次的结果
+          <br/>3. 新增输出结果码，用于debug
         </div>
       </div>
       <div v-for="item of log">{{item}}</div>
@@ -71,6 +74,7 @@
             <el-radio-button label="default">默认</el-radio-button>
             <el-radio-button label="simple">简略</el-radio-button>
             <el-radio-button label="detail">详细</el-radio-button>
+            <el-radio-button label="recoverStr">结果码</el-radio-button>
           </el-radio-group>
         </div>
         <div v-if="resultType == 'default'" v-for="(item, idx) of results" v-show="idx == rstShowId">
@@ -81,6 +85,11 @@
         </div>
         <div v-if="resultType == 'detail'" v-for="(item, idx) of resultsDeatil" v-show="idx == rstShowId">
           <div v-for="i of item">{{i}}</div>
+        </div>
+        <div v-if="resultType == 'recoverStr'" v-for="(item, idx) of recoverStrs" v-show="idx == rstShowId">
+          <div>如果结果有误，将结果码复制向开发者提交bug：</div>
+          <br/>
+          <div style="word-break: break-all;">{{item}}</div>
         </div>
       </div>
     </div>
