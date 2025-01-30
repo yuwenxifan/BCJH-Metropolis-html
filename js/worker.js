@@ -1,6 +1,6 @@
 self.addEventListener('message', e => {
   group = JSON.parse(e.data.rule).group;
-  importScripts(`./bcjh_${group.length}.js`);
+  importScripts(`./bcjh.js`);
   const progressCall = (progress) => {
       postMessage(progress);
   }
