@@ -167,7 +167,7 @@ $(function() {
         that.rstShowId = -1;
         let max = 0;
         for (let i = 0; i < cnt; i++) {
-          const myWorker = new Worker('./js/worker.js'); // 创建worker
+          const myWorker = new Worker('./js/worker.js?v=2'); // 创建worker
           that.progress.push(0);
           myWorker.addEventListener('message', e => { // 接收消息
             if (typeof e.data == 'number') {
