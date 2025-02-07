@@ -13,7 +13,14 @@
   <div id="main">
     <el-form label-width="90px">
       <el-form-item label="数据ID：">
-        <el-input v-model="userId" type="number" placeholder="白菜菊花数据ID，仅首次使用需要" size="small"></el-input>
+        <el-col :xs="8" :sm="11" :md="11">
+          <el-input v-if="!gameDataFlag" v-model="userId" type="number" placeholder="白菜菊花ID，使用过一次会缓存" size="small"></el-input>
+          <el-input v-if="gameDataFlag" v-model="gameUserId" placeholder="官方数据码，使用过一次会缓存" size="small"></el-input>
+        </el-col>
+        <el-col :xs="2" :sm="2" :md="2">&nbsp;</el-col>
+        <el-col :xs="14" :sm="11" :md="11">
+          <el-switch v-model="gameDataFlag" active-text="使用官方数据"></el-switch>
+        </el-col>
       </el-form-item>
       <el-form-item label="规则：">
         <el-select v-model="ruleId" placeholder="请选择规则" size="small">
@@ -47,11 +54,12 @@
     <el-button id="start" @click="doRun" size="small" type="primary" :loading="disable">开始</el-button>
     <div id="result">
       <div class="placeholder" v-if="log.length == 0">
-        <div>需要配合白菜菊花上传个人数据使用，白菜菊花【宴会跑分】页有详细使用说明。</div>
+        <div>可以使用官方数据导入，也可配合白菜菊花上传个人数据使用，白菜菊花【宴会跑分】页有详细使用说明。</div>
         <div style="margin-bottom: 20px;">不刷新页面，不更换规则的情况，重新点开始可以接着上一次的结果继续跑，下一次分数只高不低。</div>
         <div>
-          最近更新（2025-01-31 13:10）：
-          <br/>1. 新增支持年兽
+          最近更新（2025-02-08 00:30）：
+          <br/>1. 新增支持非3阶段规则的跑分；
+          <br/>2. 新增支持官方数据导入；
         </div>
       </div>
       <div v-for="item of log">{{item}}</div>
@@ -97,6 +105,6 @@
 <script src="./js/vue.min.js"></script>
 <script src="./ele/index.js"></script>
 <script src="./js/jquery-2.1.4.min.js"></script>
-<script src="./js/index.js?v=23"></script>
+<script src="./js/index.js?v=24"></script>
 
 </html>

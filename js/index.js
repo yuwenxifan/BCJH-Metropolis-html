@@ -3,9 +3,12 @@ $(function() {
     el: '#main',
     data: {
       uri: 'https://bcjh.xyz/api',
+      gameUri: 'https://yx518.com/api/archive.do',
       log: [],
       form: {},
+      gameDataFlag: true,
       userId: null,
+      gameUserId: null,
       rules: [],
       disable: false,
       ruleId: null,
@@ -46,6 +49,7 @@ $(function() {
           this.iterRep = this.userCfg.iterRep || this.iterRep;
           this.threadCnt = this.userCfg.threadCnt || this.cpuCnt;
           this.allowTool = this.userCfg.allowTool == undefined ? this.allowTool : this.userCfg.allowTool;
+          this.gameDataFlag = this.userCfg.gameDataFlag == undefined ? this.gameDataFlag : this.userCfg.gameDataFlag;
         } else {
           this.threadCnt = this.cpuCnt;
         }
@@ -110,11 +114,59 @@ $(function() {
         }
       },
       exec() {
+        this.printLog('开始执行');
+        if (!this.gameDataFlag) {
+          this.bcjhDataExec();
+        } else {
+          this.gameDataExec();
+        }
+      },
+      gameDataExec() {
+        let response;
+        let that = this;
+        that.log = [];
+        let userId = that.gameUserId;
+        if (!userId) {
+          that.printLog('无官方数据码，获取本地数据')
+          response = window.localStorage.getItem('gameData');
+          if (!response) {
+            that.$message({
+              message: '【错误】本地无数据，请输入官方数据码后再执行（游戏内点左上角昵称-设置-白菜菊花）',
+              type: 'error'
+            })
+          } else {
+            that.getResult(JSON.parse(response));
+          }
+        } else {
+          that.printLog('官方数据码' + userId + '，调接口获取个人数据')
+          $.ajax({
+            url: `${that.gameUri}?token=${userId}`,
+            type: 'GET'
+          }).then(rst => {
+            response = JSON.parse(rst);
+            console.log(response);
+            if (response.ret != 'S') {
+              that.$message({
+                type: 'error',
+                message: `导入失败：${response.msg}`,
+                showClose: true,
+              });
+            } else {
+              window.localStorage.setItem('gameData', JSON.stringify(response.msg));
+              that.getResult(response.msg);
+            }
+          }).fail(err => {
+            that.$message({
+              message: '获取个人数据失败',
+              type: 'error'
+            })
+          });
+        }
+      },
+      bcjhDataExec() {
         let that = this;
         that.log = [];
         let userId = that.userId;
-        that.printLog('开始执行');
-        let response;
         if (!userId) {
           that.printLog('无用户id，获取本地数据')
           response = window.localStorage.getItem('data');
@@ -157,7 +209,9 @@ $(function() {
         that.results = [];
         that.resultsDeatil = [];
         that.progress = [];
-        if (!that.checkData(data, user)) {
+        let check = that.gameDataFlag ? that.checkGameData(data) : that.checkData(data, user);
+
+        if (!check) {
           return;
         }
         that.disable = true;
@@ -193,7 +247,7 @@ $(function() {
           });
 
           myWorker.postMessage({
-            data,
+            data: that.gameDataFlag ? JSON.stringify(data) : data,
             rule: JSON.stringify(that.rule),
             passline: parseInt(that.passline),
             iterChef: parseInt(that.iterChef),
@@ -211,12 +265,13 @@ $(function() {
         let gusetIdx = 0;
         let scores = [];
         let gusetMap = {};
+        let chefCnt = this.rule.group[0].IntentList.length;
         for (let log of logs) {
           if (log.slice(0, 3) == '╰─>') {
             scores.push(log.split('总价: ')[1].replace('💰︎', ''));
           }
           if (log.slice(0, 5) == '  厨师：') {
-            if (idx % 3 == 0) {
+            if (idx % chefCnt == 0) {
               let guset = this.rule.group[gusetIdx].Title;
               gusetIdx++;
               rstShow.push(`第${gusetIdx}位客人：${guset}`);
@@ -229,7 +284,7 @@ $(function() {
             rstShow.push(reps.map((r, i) => `${r}(${scores[i]})`).join('；'));
             scores = [];
             idx++;
-            if (idx % 3 == 0) {
+            if (idx % chefCnt == 0) {
               rstShow.push('===================');
             }
           }
@@ -247,8 +302,9 @@ $(function() {
         let rstShow = [];
         let repIdx = 0;
         let gusetIdx = 0;
+        let chefCnt = this.rule.group[0].IntentList.length;
         for (let chef of rst.chefs) {
-          if (repIdx % 9 == 0) {
+          if (repIdx % (chefCnt * 3) == 0) {
             let guset = this.rule.group[gusetIdx].Title;
             gusetIdx++;
             rstShow.push(`第${gusetIdx}位客人：${guset}`);
@@ -260,7 +316,7 @@ $(function() {
             repIdx += 1;
           }
           rstShow.push(`菜谱：${reps.join('; ')}`);
-          if (repIdx % 9 == 0) {
+          if (repIdx % (chefCnt * 3) == 0) {
             rstShow.push('===================');
           }
         }
@@ -291,6 +347,17 @@ $(function() {
           return true;
         }
         this.printLog(`个人数据不正确（昵称：${user}，厨师数：${chefs.length}，菜谱数：${reps.length}），无法计算`);
+        return false;
+      },
+      checkGameData(data) {
+        let userData = data;
+        let chefs = userData.chefs.filter(c => c.got == '是');
+        let reps  = userData.recipes.filter(r => r.got == '是');
+        if (chefs.length > 0 && reps.length > 0) {
+          this.printLog(`个人数据获取成功（厨师数：${chefs.length}，菜谱数：${reps.length}），请耐心等待结果输出`);
+          return true;
+        }
+        this.printLog(`个人数据不正确（厨师数：${chefs.length}，菜谱数：${reps.length}），无法计算`);
         return false;
       },
       printLog(str) {
@@ -327,6 +394,10 @@ $(function() {
       },
       allowTool(n) {
         this.userCfg.allowTool = n;
+        window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
+      },
+      gameDataFlag(n) {
+        this.userCfg.gameDataFlag = n;
         window.localStorage.setItem('userCfg', JSON.stringify(this.userCfg));
       },
       ruleId(id) {
